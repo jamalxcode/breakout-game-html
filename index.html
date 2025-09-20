@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Breakout Game</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        #gameCanvas {
+            border: 2px solid #333;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+        #gameOver {
+            color: #ff0000;
+            font-size: 32px;
+            font-weight: bold;
+            margin: 20px;
+            display: none;
+        }
+        #score, #lives, #level {
+            margin: 10px;
+            font-size: 24px;
+            color: #333;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            margin-top: 10px;
+            cursor: pointer;
+            background-color: #0095dd;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #007bc3;
+        }
+    </style>
+</head>
+<body>
+    <div id="score">Score: 0</div>
+    <div id="lives">Lives: 3</div>
+    <div id="level">Level: 1</div>
+    <div id="gameOver"></div>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <button onclick="startGame()">Restart Game</button>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Game state variables
+        let paddle = {
+            x: canvas.width / 2 - 50,
+            y: canvas.height - 40,
+            width: 100,
+            height: 20,
+            color: '#0095DD',
+            speed: 10
+        };
+        
+        let ball = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            radius: 10,
+            dx: 2,
+            dy: -2,
+            color: '#FF6B6B',
+            active: true
+        };
+
+        let bricks = [];
+        let score = 0;
+        let lives = 3;
+        let level = 1;
+        let gameOver = false;
+
+        // Brick configuration
+        const BRICK_COLS = 10;
+        const BRICK_ROWS = 4;
+        const BRICK_WIDTH = 70;
+        const BRICK_HEIGHT = 20;
+        const BRICK_PADDING = 5;
+        const BRICK_TOP_OFFSET = 30;
+        const BRICK_COLORS = ['#FF0000', '#FFA500', '#FFFF00', '#008000', '#0000FF', '#800080', '#4B0082'];
+
+        // Paddle configuration
+        const PADDLE_COLOR = '#0095DD';
+        const PADDLE_WIDTH = 100;
+        const PADDLE_HEIGHT = 20;
+        const PADDLE_Y_OFFSET = 20;
+
+        // Ball configuration
+        const BALL_RADIUS = 10;
+        const INITIAL_BALL_DX = 2;
+        const INITIAL_BALL_DY = -2;
+
+        // Create bricks structure for current level
+        function createBricks() {
+            const bricks = [];
+            const totalBrickWidth = BRICK_COLS * (BRICK_WIDTH + BRICK_PADDING) - BRICK_PADDING;
+            const leftOffset = (canvas.width - totalBrickWidth) / 2;
+            
+            for (let row = 0; row < BRICK_ROWS + level; row++) {
+                for (let col = 0; col < BRICK_COLS; col++) {
+                    const x = leftOffset + col * (BRICK_WIDTH + BRICK_PADDING);
+                    const y = BRICK_TOP_OFFSET + row * (BRICK_HEIGHT + BRICK_PADDING);
+                    
+                    bricks.push({
+                        x,
+                        y,
+                        width: BRICK_WIDTH,
+                        height: BRICK_HEIGHT,
+                        color: BRICK_COLORS[row % BRICK_COLORS.length],
+                        hits: 1,  // Can be increased for stronger bricks
+                        active: true
+                    });
+                }
+            }
+            return bricks;
+        }
+
+        // Reset ball to starting position
+        function resetBall() {
+            ball.x = paddle.x + paddle.width / 2;
+            ball.y = paddle.y - ball.radius;
+            ball.dx = INITIAL_BALL_DX * (Math.random() < 0.5 ? -1 : 1);  // Random start direction
+            ball.dy = INITIAL_BALL_DY;
+            ball.active = true;
+        }
+
+        // Draw paddle on canvas
+        function drawPaddle() {
+            ctx.fillStyle = paddle.color;
+            ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+        }
+
+        // Draw ball on canvas
+        function drawBall() {
+            ctx.fillStyle = ball.color;
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        // Draw a single brick
+        function drawBrick(brick) {
+            ctx.fillStyle = brick.color;
+            ctx.fillRect(brick.x, brick.y, brick.width, brick.height);
+        }
+
+        // Update paddle position based on mouse movement
+        function updatePaddle() {
+            // Get mouse position relative to canvas
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            
+            // Update paddle X position
+            paddle.x = Math.max(0, Math.min(mouseX - paddle.width/2, canvas.width - paddle.width));
+        }
+
+        // Update ball position and handle wall collisions
+        function updateBall() {
+            if (!ball.active) return;
+            
+            const prevX = ball.x;
+            const prevY = ball.y;
+            
+            // Update position
+            ball.x += ball.dx;
+            ball.y += ball.dy;
+
+            // Left/right wall collision
+            if (ball.x - ball.radius < 0 || ball.x + ball.radius > canvas.width) {
+                ball.dx *= -1;
+            }
+
+            // Top wall collision
+            if (ball.y - ball.radius < 0) {
+                ball.dy *= -1;
+            }
+
+            // Bottom wall collision (paddle miss)
+            if (ball.y + ball.radius > canvas.height) {
+                ball.active = false;
+                lives--;
+                resetBall();
+            }
+
+            return { prevX, prevY };
+        }
+
+        // Check paddle collision with ball
+        function checkPaddleCollision(prevX, prevY) {
+            if (!ball.active) return;
+            
+            const paddleTop = paddle.y;
+            const paddleBottom = paddleTop + paddle.height;
+            const paddleLeft = paddle.x;
+            const paddleRight = paddleLeft + paddle.width;
+
+            const ballCurrentTop = ball.y - ball.radius;
+            const ballCurrentBottom = ball.y + ball.radius;
+            const ballCurrentLeft = ball.x - ball.radius;
+            const ballCurrentRight = ball.x + ball.radius;
+
+            const ballPrevTop = prevY - ball.radius;
+            const ballPrevBottom = prevY + ball.radius;
+            const ballPrevLeft = prevX - ball.radius;
+            const ballPrevRight = prevX + ball.radius;
+
+            // Check if collision just occurred
+            const prevCollision = 
+                ballPrevRight > paddleLeft && ballPrevLeft < paddleRight &&
+                ballPrevBottom > paddleTop && ballPrevTop < paddleBottom;
+                
+            const currentCollision = 
+                ballCurrentRight > paddleLeft && ballCurrentLeft < paddleRight &&
+                ballCurrentBottom > paddleTop && ballCurrentTop < paddleBottom;
+
+            if (!prevCollision && currentCollision) {
+                // Reverse vertical direction
+                ball.dy *= -1;
+
+                // Calculate hit position and adjust horizontal direction
+                const paddleCenter = paddleLeft + paddle.width / 2;
+                const hitPosition = ball.x - paddleCenter;
+                const ratio = hitPosition / (paddle.width / 2);
+                ball.dx = ratio * 5;  // 5 is max horizontal speed multiplier
+                
+                // Prevent ball from getting stuck
+                if (ball.y + ball.radius > paddleBottom) {
+                    ball.y = paddleBottom + ball.radius;
+                }
+            }
+        }
+
+        // Check brick collisions and handle them
+        function checkBrickCollisions(prevX, prevY) {
+            if (!ball.active) return;
+            
+            bricks.forEach(brick => {
+                if (brick.active) {
+                    const brickTop = brick.y;
+                    const brickBottom = brickTop + brick.height;
+                    const brickLeft = brick.x;
+                    const brickRight = brickLeft + brick.width;
+
+                    const ballCurrentTop = ball.y - ball.radius;
+                    const ballCurrentBottom = ball.y + ball.radius;
+                    const ballCurrentLeft = ball.x - ball.radius;
+                    const ballCurrentRight = ball.x + ball.radius;
+
+                    const ballPrevTop = prevY - ball.radius;
+                    const ballPrevBottom = prevY + ball.radius;
+                    const ballPrevLeft = prevX - ball.radius;
+                    const ballPrevRight = prevX + ball.radius;
+
+                    // Check if collision just occurred
+                    const prevCollision = 
+                        ballPrevRight > brickLeft && ballPrevLeft < brickRight &&
+                        ballPrevBottom > brickTop && ballPrevTop < brickBottom;
+                        
+                    const currentCollision = 
+                        ballCurrentRight > brickLeft && ballCurrentLeft < brickRight &&
+                        ballCurrentBottom > brickTop && ballCurrentTop < brickBottom;
+
+                    if (!prevCollision && currentCollision) {
+                        // Determine collision direction
+                        const overlapX = Math.min(ballCurrentRight, brickRight) - Math.max(ballCurrentLeft, brickLeft);
+                        const overlapY = Math.min(ballCurrentBottom, brickBottom) - Math.max(ballCurrentTop, brickTop);
+
+                        if (overlapY > overlapX) {
+                            // Vertical collision (top/bottom)
+                            ball.dy *= -1;
+                        } else {
+                            // Horizontal collision (left/right)
+                            ball.dx *= -1;
+                        }
+
+                        // Update brick and score
+                        brick.hits--;
+                        if (brick.hits <= 0) {
+                            brick.active = false;
+                            score += 10;
+                        }
+                    }
+                }
+            });
+        }
+
+        // Check if all bricks are destroyed
+        function checkLevelCompletion() {
+            if (!bricks.some(brick => brick.active)) {
+                level++;
+                score += 100;  // Level completion bonus
+                // Increase ball speed for next level
+                ball.dx *= 1.1;
+                ball.dy *= 1.1;
+                // Reset bricks for new level
+                bricks = createBricks();
+            }
+        }
+
+        // Main game loop
+        function gameLoop() {
+            if (gameOver) return;
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Update and draw elements
+            drawPaddle();
+            drawBall();
+            bricks.forEach(brick => brick.active && drawBrick(brick));
+
+            // Update ball position and get previous coordinates
+            const { prevX, prevY } = updateBall();
+
+            // Check collisions
+            checkPaddleCollision(prevX, prevY);
+            checkBrickCollisions(prevX, prevY);
+
+            // Update UI
+            document.getElementById('score').textContent = `Score: ${score}`;
+            document.getElementById('lives').textContent = `Lives: ${lives}`;
+            document.getElementById('level').textContent = `Level: ${level}`;
+
+            // Check for level completion
+            checkLevelCompletion();
+
+            // Check game over condition
+            if (lives <= 0) {
+                gameOver = true;
+                document.getElementById('gameOver').textContent = `Game Over! Final Score: ${score}`;
+                document.getElementById('gameOver').style.display = 'block';
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // Initialize game
+        function startGame() {
+            gameOver = false;
+            document.getElementById('gameOver').style.display = 'none';
+            paddle.x = canvas.width / 2 - paddle.width / 2;
+            ball.active = true;
+            resetBall();
+            bricks = createBricks();
+            gameLoop();
+        }
+
+        // Event listeners
+        canvas.addEventListener('mousemove', updatePaddle);
+        canvas.addEventListener('click', () => {
+            if (!ball.active && !gameOver) {
+                ball.active = true;
+                resetBall();
+            }
+        });
+
+        // Start the game when page loads
+        startGame();
+    </script>
+</body>
+</html>
