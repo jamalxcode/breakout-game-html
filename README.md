@@ -1,6 +1,6 @@
 # Breakout Game
 
-A classic browser-based breakout game built with HTML5 Canvas and JavaScript.  
+A browser Breakout game in two versions: the AI-written original from 2025 and a rebuilt Version 2.0 from 2026, built with HTML5 Canvas and JavaScript.  
 Hosted at https://breakout.sala.company
 
 ## Versions
@@ -49,43 +49,34 @@ The start page lets you pick which version to play:
 | `v2/main.js` | Menus, saving, controls and the start-page demo |
 | `v2/tests.html` | Open in a browser to check every level and let a bot play all 76 |
 
-## Description
+## Version 1.0: the original (September 2025)
 
-**Breakout Game** is a modern reimagining of the classic arcade hit. Move your paddle left and right—using your mouse, keyboard, or touch—and keep the ball in play to destroy all bricks at the top of the screen. Play instantly in any modern browser.
+The first version was written by `K2 Think`, the AI from Mohamed bin Zayed University of Artificial Intelligence (MBZUAI) in the UAE. It is kept exactly as it was, so you can compare it with 2.0. A screen recording of K2 Think writing it is on the start page ("Watch how it was made") and in this repo as `small k2 think.mp4`.
 
-## How K2 Think Was Used
+- **Controls:** mouse only. Move the mouse over the game to steer the paddle. The keyboard and touch don't work in this version.
+- **Objective:** destroy all the bricks without letting the ball fall below your paddle.
+- **Scoring:** 10 points per brick and a 100-point bonus for each cleared level. Each new level adds a row of bricks and speeds the ball up.
 
-This project leverages `K2 Think`—an advanced AI code-assist and productivity platform—to accelerate the game's design and development. K2 Think was used to:
-- Generate HTML5 Canvas and JavaScript templates,
-- Provide optimized logic for paddle/ball movement, collision handling, and rendering,
-- Suggest UI enhancements (score, game over, etc.),
-- Accelerate prototyping and game structure design.
+K2 Think was used to:
+- Generate the HTML5 Canvas and JavaScript structure
+- Write the paddle and ball movement, collision handling and rendering
+- Add the score, lives, level and game-over display
 
-## Gameplay
+## Version 2.0 (October 2026)
 
-- **Controls**:  
-  - **Mouse**: Move your mouse over the game area to control the paddle smoothly and precisely.
-  - **Keyboard**: Use the Left and Right arrow keys.
-  - **Touch**: Playable on touch devices for mobile browser users.
-- **Objective**: Destroy all the bricks without letting the ball fall below your paddle.
-- **Scoring**: Earn points for every brick you destroy. Challenge yourself for the highest score!
+Version 2.0 was rebuilt from scratch with [Claude Code](https://claude.com/claude-code) by Anthropic. Claude Code designed the 76 levels, wrote the game engine, graphics, sound and music, wrote the test page, and used a bot to play every level to make sure each one can be finished.
 
-### Features
+## How it's built
 
-- Smooth paddle motion with mouse, keyboard, or touch input
-- Real-time collision detection for all game elements
-- Score, lives, and level indicators
-- Crisp graphics and animations, rendered using Canvas API
+- **Frontend:** HTML5, CSS and JavaScript, with no frameworks or build step
+- **Rendering:** the Canvas API
+- **Hosting:** GitHub Pages at https://breakout.sala.company
 
-## How It Was Built
+## License
 
-- **Frontend:** HTML5, CSS, JavaScript
-- **Rendering:** Uses Canvas API for smooth 2D graphics
-- **Game Engine:** Built from scratch leveraging AI-generated prototypes for the core game loop and logic
+Released under the MIT License. See [LICENSE](LICENSE).
+Copyright (c) 2025-2026 SALA CO FOR COMPUTER CONSULTING AND FACILITIES MANAGEMENT ([sala.company](https://sala.company)), Kuwait.
 
 ---
 
-**Play Now:**  
-Visit https://breakout.sala.company to experience the game live!
-
----
+**Play now:** https://breakout.sala.company

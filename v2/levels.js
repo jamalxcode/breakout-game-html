@@ -1,3 +1,7 @@
+// Vibe Coded Breakout 2.0
+// Copyright (c) 2025-2026 SALA CO FOR COMPUTER CONSULTING AND FACILITIES MANAGEMENT (sala.company), Kuwait
+// Released under the MIT License. See the LICENSE file for the full text.
+
 // Breakout 2.0 level data: 4 worlds x 19 hand-designed levels.
 //
 // Map legend (13 columns per row):
@@ -577,10 +581,10 @@ const RAW = [
     '...1.1.1.1...',
   ], { slide: [0, 1, 2, 3, 4, 5] }],
   ['Black Hole', [
-    'MMMMMMMMMMMMM',
+    'MMMM.....MMMM',
     '.22G22P22G22.',
     '.X222222222X.',
-    'MMM..MMM..MMM',
+    'MM...MMM...MM',
     '.............',
     '.............',
     '......P......',
@@ -619,7 +623,7 @@ const RAW = [
     '3333333333333',
     '3?3P33G33Q3?3',
     '3333333333333',
-    'MMMMM...MMMMM',
+    '.MM...M...MM.',
     '.............',
     '..Q.......P..',
   ]],

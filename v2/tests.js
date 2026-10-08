@@ -1,3 +1,7 @@
+// Vibe Coded Breakout 2.0
+// Copyright (c) 2025-2026 SALA CO FOR COMPUTER CONSULTING AND FACILITIES MANAGEMENT (sala.company), Kuwait
+// Released under the MIT License. See the LICENSE file for the full text.
+
 // Browser test runner for Breakout 2.0. Open v2/tests.html to run it.
 import { LEVELS, COLS, LEVELS_PER_WORLD } from './levels.js';
 import { createGame, update, action, applyPow, botInput, breakableLeft, PAD_Y } from './game.js';

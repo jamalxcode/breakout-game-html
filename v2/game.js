@@ -1,3 +1,7 @@
+// Vibe Coded Breakout 2.0
+// Copyright (c) 2025-2026 SALA CO FOR COMPUTER CONSULTING AND FACILITIES MANAGEMENT (sala.company), Kuwait
+// Released under the MIT License. See the LICENSE file for the full text.
+
 // Breakout 2.0 game logic. No DOM access here, so the test page can run it headless.
 import { LEVELS, WORLDS, COLS } from './levels.js';
 
@@ -377,6 +381,9 @@ function updateBalls(G, dt, k, speed) {
       // Portals
       if (b.portalCd <= 0) for (const p of G.portals) {
         if ((b.x - p.x) ** 2 + (b.y - p.y) ** 2 < 15 * 15) {
+          // A small random turn on exit stops balls cycling through portals forever
+          const a = Math.atan2(b.dy, b.dx) + (Math.random() - .5) * .35;
+          b.dx = Math.cos(a); b.dy = Math.sin(a); norm(b);
           b.x = p.to.x + b.dx * 20; b.y = p.to.y + b.dy * 20; b.portalCd = 450; b.trail = [];
           ring(G, p.x, p.y, 26, '#8be9ff'); ring(G, p.to.x, p.to.y, 26, '#8be9ff');
           G.hooks.sfx('portal');
@@ -445,9 +452,12 @@ function updateHoming(G, k) {
     // Only bend balls heading toward the bricks, never ones dropping to the bat
     if (b.dy > 0 && best.y + best.h / 2 < b.y) continue;
     const want = Math.atan2(best.y + best.h / 2 - b.y, best.x + best.w / 2 - b.x), cur = Math.atan2(b.dy, b.dx);
+    // A brick almost level with the ball can't be homed on without flattening it into a loop
+    if (Math.abs(Math.sin(want)) < .3) continue;
     let diff = want - cur; while (diff > Math.PI) diff -= 2 * Math.PI; while (diff < -Math.PI) diff += 2 * Math.PI;
     const a = cur + Math.max(-.04 * k, Math.min(.04 * k, diff));
     b.dx = Math.cos(a); b.dy = Math.sin(a);
+    norm(b); // never let homing flatten the ball into an endless sideways skim
   }
 }
 

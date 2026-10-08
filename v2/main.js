@@ -1,3 +1,7 @@
+// Vibe Coded Breakout 2.0
+// Copyright (c) 2025-2026 SALA CO FOR COMPUTER CONSULTING AND FACILITIES MANAGEMENT (sala.company), Kuwait
+// Released under the MIT License. See the LICENSE file for the full text.
+
 // Breakout 2.0 page controller: menus, saving, input, music and the start-page demo.
 import { LEVELS, WORLDS, LEVELS_PER_WORLD } from './levels.js';
 import { W, createGame, update, action, botInput } from './game.js';

@@ -1,3 +1,7 @@
+// Vibe Coded Breakout 2.0
+// Copyright (c) 2025-2026 SALA CO FOR COMPUTER CONSULTING AND FACILITIES MANAGEMENT (sala.company), Kuwait
+// Released under the MIT License. See the LICENSE file for the full text.
+
 // Breakout 2.0 drawing. Bricks, glows and backgrounds are drawn once into
 // offscreen canvases and reused every frame, which keeps cheap phones smooth.
 import { W, H, HUD, BW, BH, PAD_Y, PAD_H, POW } from './game.js';
