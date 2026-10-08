@@ -17,7 +17,7 @@
   h1 { font-size:clamp(40px,8vw,72px); margin:0; letter-spacing:4px; font-weight:900;
        background:linear-gradient(90deg,var(--a1),var(--a2)); -webkit-background-clip:text; background-clip:text; color:transparent; }
   .sub { color:var(--muted); margin:8px 0 40px; text-align:center; }
-  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:24px; width:100%; max-width:860px; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr)); gap:24px; width:100%; max-width:860px; }
   .card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:28px; display:flex; flex-direction:column; gap:14px; }
   .card.new { border-color:#5a3bb0; box-shadow:0 0 50px rgba(255,79,216,.15); }
   .tag { font-size:12px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); }
