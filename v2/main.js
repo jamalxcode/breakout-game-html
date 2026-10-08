@@ -121,7 +121,7 @@ function openLevels() {
     const b = document.createElement('button');
     b.textContent = `${i + 1} · ${w.name}`; b.className = i === levelTab ? 'on' : '';
     b.disabled = progress.unlocked < i * LEVELS_PER_WORLD + 1;
-    b.onclick = () => { levelTab = i; audio.sfx('click'); openLevels(); };
+    b.onclick = () => { levelTab = i; openLevels(); };
     tabs.appendChild(b);
   });
   const grid = $('lvGrid'); grid.innerHTML = '';
@@ -210,7 +210,7 @@ function buttons(list) {
   const box = $('msgBtns'); box.innerHTML = '';
   list.forEach(([text, fn, primary]) => {
     const b = document.createElement('button'); b.textContent = text; if (primary) b.className = 'primary';
-    b.onclick = () => { audio.sfx('click'); fn(); }; box.appendChild(b);
+    b.onclick = fn; box.appendChild(b);
   });
 }
 function animateStars(n) {
@@ -249,6 +249,10 @@ document.querySelectorAll('[data-set]').forEach(el => {
 });
 
 // ---------- Input ----------
+// Browsers only allow sound after the player interacts, so switch it on at the first tap, click or key
+for (const ev of ['pointerdown', 'keydown', 'touchend']) addEventListener(ev, () => { if (!DEMO) audio.unlockAudio(); }, { capture: true, passive: true });
+addEventListener('click', e => { if (!DEMO && e.target.closest('button, a.b')) audio.sfx('click'); });
+
 let touchX = null;
 const toX = clientX => { const r = cv.getBoundingClientRect(); return (clientX - r.left) / r.width * W; };
 addEventListener('pointerdown', e => {

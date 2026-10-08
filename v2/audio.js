@@ -7,20 +7,35 @@ const state = { sound: true, music: true };
 function ctx() {
   if (!ac) {
     try {
+      // iPhones mute web audio when the silent switch is on, unless the page asks to be treated as media playback
+      if (navigator.audioSession) navigator.audioSession.type = 'playback';
       ac = new (window.AudioContext || window.webkitAudioContext)();
-      master = ac.createGain(); master.gain.value = .9; master.connect(ac.destination);
-      const comp = ac.createDynamicsCompressor(); comp.connect(master);
-      sfxBus = ac.createGain(); sfxBus.gain.value = .8; sfxBus.connect(comp);
-      musicBus = ac.createGain(); musicBus.gain.value = .32; musicBus.connect(comp);
+      master = ac.createGain(); master.gain.value = 1; master.connect(ac.destination);
+      // A limiter so the louder mix never distorts when lots of sounds overlap
+      const comp = ac.createDynamicsCompressor();
+      comp.threshold.value = -10; comp.knee.value = 6; comp.ratio.value = 12; comp.attack.value = .002; comp.release.value = .15;
+      comp.connect(master);
+      sfxBus = ac.createGain(); sfxBus.gain.value = 2.6; sfxBus.connect(comp);
+      musicBus = ac.createGain(); musicBus.gain.value = .6; musicBus.connect(comp);
       noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
       const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
     } catch (e) { ac = null; }
   }
-  if (ac && ac.state === 'suspended') ac.resume();
+  if (ac && ac.state === 'suspended') ac.resume().catch(() => {});
   return ac;
 }
 
-export function unlockAudio() { ctx(); }
+let unlocked = false;
+export function unlockAudio() {
+  ctx();
+  if (unlocked || !ac) return;
+  unlocked = true;
+  // Older iPhones only start web audio after a sound is played inside a tap
+  try {
+    const s = ac.createBufferSource(); s.buffer = ac.createBuffer(1, 1, 22050);
+    s.connect(ac.destination); s.start(0);
+  } catch (e) {}
+}
 export function setSound(on) { state.sound = on; }
 export function setMusic(on) { state.music = on; if (!on) stopMusic(); }
 
@@ -46,33 +61,33 @@ const LADDER = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21, 24, 26, 28, 31];
 let lastWall = 0;
 
 const SFX = {
-  paddle: () => { tone({ f: 180, d: .12, type: 'sine', vol: .22, slide: -60 }); noise({ d: .04, vol: .05, freq: 2500 }); },
-  wall: () => { const n = ac.currentTime; if (n - lastWall < .05) return; lastWall = n; tone({ f: 420, d: .04, type: 'triangle', vol: .04 }); },
-  launch: () => tone({ f: 300, d: .15, type: 'triangle', vol: .08, slide: 300 }),
+  paddle: () => { tone({ f: 180, d: .12, type: 'sine', vol: .4, slide: -60 }); noise({ d: .04, vol: .1, freq: 2500 }); },
+  wall: () => { const n = ac.currentTime; if (n - lastWall < .05) return; lastWall = n; tone({ f: 420, d: .04, type: 'triangle', vol: .08 }); },
+  launch: () => tone({ f: 300, d: .15, type: 'triangle', vol: .16, slide: 300 }),
   brick: (combo = 1) => {
     const f = midi(72 + LADDER[Math.min(combo - 1, LADDER.length - 1)]);
-    tone({ f, d: .12, type: 'square', vol: .045 }); tone({ f: f * 2, d: .08, type: 'sine', vol: .03 });
-    noise({ d: .05, vol: .08, freq: 3000, q: 2 });
+    tone({ f, d: .12, type: 'square', vol: .2 }); tone({ f: f * 2, d: .08, type: 'sine', vol: .12 });
+    noise({ d: .05, vol: .3, freq: 3000, q: 2 });
   },
-  tough: () => { tone({ f: 160, d: .08, type: 'triangle', vol: .1 }); noise({ d: .05, vol: .08, freq: 900 }); },
-  metal: () => { tone({ f: 1480, d: .18, type: 'triangle', vol: .05 }); tone({ f: 2217, d: .14, type: 'sine', vol: .03 }); },
+  tough: () => { tone({ f: 160, d: .08, type: 'triangle', vol: .35 }); noise({ d: .05, vol: .28, freq: 900 }); },
+  metal: () => { tone({ f: 1480, d: .18, type: 'triangle', vol: .17 }); tone({ f: 2217, d: .14, type: 'sine', vol: .1 }); },
   boom: (big) => {
     noise({ d: big ? 1.1 : .45, vol: big ? .55 : .3, freq: big ? 1800 : 1400, type: 'lowpass', sweep: big ? -1700 : -1200 });
     tone({ f: big ? 120 : 160, d: big ? .8 : .3, type: 'sine', vol: big ? .35 : .2, slide: big ? -85 : -100 });
   },
-  power: () => [0, 4, 7, 12].forEach((s, i) => tone({ f: midi(72 + s), d: .12, type: 'square', vol: .045, at: i * .05 })),
-  bad: () => [12, 8, 5, 0].forEach((s, i) => tone({ f: midi(60 + s), d: .14, type: 'sawtooth', vol: .04, at: i * .06 })),
-  coin: () => { tone({ f: 988, d: .08, type: 'square', vol: .05 }); tone({ f: 1319, d: .3, type: 'square', vol: .05, at: .07 }); },
-  rocket: () => noise({ d: .25, vol: .12, freq: 600, sweep: 2400 }),
-  laser: () => tone({ f: 1400, d: .09, type: 'square', vol: .03, slide: -900 }),
-  catch: () => tone({ f: 520, d: .1, type: 'sine', vol: .12, slide: -200 }),
-  portal: () => { tone({ f: 300, d: .25, type: 'sine', vol: .1, slide: 900 }); tone({ f: 600, d: .25, type: 'triangle', vol: .04, slide: 1200, at: .03 }); },
-  orb: () => tone({ f: 220, d: .3, type: 'sawtooth', vol: .04, slide: -120 }),
-  bossHit: () => { tone({ f: 90, d: .2, type: 'square', vol: .12, slide: -30 }); noise({ d: .1, vol: .15, freq: 500 }); },
-  lose: () => { tone({ f: 330, d: .7, type: 'sawtooth', vol: .07, slide: -260 }); noise({ d: .4, vol: .08, freq: 400, type: 'lowpass' }); },
-  clear: () => [0, 4, 7, 12, 16, 19, 24].forEach((s, i) => tone({ f: midi(67 + s), d: .22, type: 'square', vol: .05, at: i * .075 })),
-  star: (i = 0) => tone({ f: midi(79 + i * 4), d: .3, type: 'triangle', vol: .09 }),
-  click: () => tone({ f: 660, d: .05, type: 'triangle', vol: .05 }),
+  power: () => [0, 4, 7, 12].forEach((s, i) => tone({ f: midi(72 + s), d: .12, type: 'square', vol: .065, at: i * .05 })),
+  bad: () => [12, 8, 5, 0].forEach((s, i) => tone({ f: midi(60 + s), d: .14, type: 'sawtooth', vol: .07, at: i * .06 })),
+  coin: () => { tone({ f: 988, d: .08, type: 'square', vol: .08 }); tone({ f: 1319, d: .3, type: 'square', vol: .08, at: .07 }); },
+  rocket: () => noise({ d: .25, vol: .6, freq: 600, sweep: 2400 }),
+  laser: () => tone({ f: 1400, d: .09, type: 'square', vol: .2, slide: -900 }),
+  catch: () => tone({ f: 520, d: .1, type: 'sine', vol: .22, slide: -200 }),
+  portal: () => { tone({ f: 300, d: .25, type: 'sine', vol: .18, slide: 900 }); tone({ f: 600, d: .25, type: 'triangle', vol: .07, slide: 1200, at: .03 }); },
+  orb: () => tone({ f: 220, d: .3, type: 'sawtooth', vol: .12, slide: -120 }),
+  bossHit: () => { tone({ f: 90, d: .2, type: 'square', vol: .2, slide: -30 }); noise({ d: .1, vol: .3, freq: 500 }); },
+  lose: () => { tone({ f: 330, d: .7, type: 'sawtooth', vol: .14, slide: -260 }); noise({ d: .4, vol: .16, freq: 400, type: 'lowpass' }); },
+  clear: () => [0, 4, 7, 12, 16, 19, 24].forEach((s, i) => tone({ f: midi(67 + s), d: .22, type: 'square', vol: .065, at: i * .075 })),
+  star: (i = 0) => tone({ f: midi(79 + i * 4), d: .3, type: 'triangle', vol: .18 }),
+  click: () => tone({ f: 660, d: .05, type: 'triangle', vol: .17 }),
 };
 
 export function sfx(name, arg) {
