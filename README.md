@@ -3,6 +3,28 @@
 A classic browser-based breakout game built with HTML5 Canvas and JavaScript.  
 Hosted at https://breakout.sala.company
 
+## Versions
+
+The start page lets you pick which version to play:
+
+| | File | Created | What's in it |
+|---|---|---|---|
+| **Original** | `classic.html` | September 2025 | The first build, kept exactly as it was |
+| **Breakout 2.0** | `v2.html` | October 2026 | 76 levels, Multi-Ball, Rocket Launchers, Super Bombs, Bonus Points, Big Bat, Slow Ball, extra lives, tough/metal/explosive bricks, combos, particles, sound, level select, saved progress |
+
+### Breakout 2.0 power-ups
+
+| Capsule | Power-up | Effect |
+|---|---|---|
+| **M** | Multi-Ball | Splits every ball into three |
+| **R** | Rocket Launchers | The bat fires rockets for 10 seconds |
+| **B** | Super Bomb | The next brick hit blows up a huge area, metal bricks included |
+| **$** | Bonus Points | A cash prize from 250 to 5,000 points |
+| **W** | Big Bat | A wider paddle for 15 seconds |
+| **S** | Slow Ball | Slows the ball for 10 seconds |
+| **+** | Extra Life | One more life |
+| **–** | Shrink | A smaller paddle for 10 seconds (avoid it!) |
+
 ## Description
 
 **Breakout Game** is a modern reimagining of the classic arcade hit. Move your paddle left and right—using your mouse, keyboard, or touch—and keep the ball in play to destroy all bricks at the top of the screen. Play instantly in any modern browser.
