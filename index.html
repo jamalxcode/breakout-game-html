@@ -17,7 +17,11 @@
   h1 { font-size:clamp(40px,8vw,72px); margin:0; letter-spacing:4px; font-weight:900;
        background:linear-gradient(90deg,var(--a1),var(--a2)); -webkit-background-clip:text; background-clip:text; color:transparent; }
   .sub { color:var(--muted); margin:8px 0 40px; text-align:center; }
-  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr)); gap:24px; width:100%; max-width:860px; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr)); gap:24px; width:100%; max-width:960px; }
+  .shot { position:relative; aspect-ratio:4/3; border-radius:12px; overflow:hidden; border:1px solid var(--line); background:#000; }
+  .shot svg, .shot iframe { position:absolute; inset:0; width:100%; height:100%; border:0; display:block; pointer-events:none; }
+  .shot .live { position:absolute; bottom:8px; left:8px; font-size:11px; font-weight:800; letter-spacing:1.5px; padding:3px 8px; border-radius:99px; background:rgba(0,0,0,.6); color:#ff4fd8; }
+  .credit { text-align:center; font-size:13px; color:var(--muted); margin:-4px 0 0; }
   .card { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:28px; display:flex; flex-direction:column; gap:14px; }
   .card.new { border-color:#5a3bb0; box-shadow:0 0 50px rgba(255,79,216,.15); }
   .tag { font-size:12px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); }
@@ -47,6 +51,7 @@
     <div class="card old">
       <span class="tag">Version 1.0 · September 2025</span>
       <h2>Original</h2>
+      <div class="shot"><svg id="classicShot" viewBox="0 0 800 600" role="img" aria-label="The original game: white board, rainbow bricks, red ball, blue bat"></svg></div>
       <ul>
         <li>The first build, kept exactly as it was</li>
         <li>One brick layout that grows each level</li>
@@ -60,16 +65,17 @@
     <div class="card new">
       <span class="tag">Version 2.0 · October 2026</span>
       <h2>Breakout 2.0</h2>
+      <div class="shot"><iframe src="v2.html?demo" title="Breakout 2.0 playing itself" loading="lazy" tabindex="-1"></iframe><span class="live">LIVE DEMO</span></div>
       <ul>
-        <li>76 levels, including pixel-art stages</li>
-        <li>Multi-Ball, Rocket Launchers, Super Bombs</li>
-        <li>Bonus points, Big Bat, Slow Ball, extra lives</li>
-        <li>Tough, metal and explosive bricks</li>
-        <li>Combos, particles, sound, level select</li>
-        <li>Mouse, keyboard and touch</li>
+        <li>4 themed worlds, 76 hand-designed levels, 4 bosses</li>
+        <li>Multi-Ball, Rockets, Lasers, Super Bombs, Fireball, Catch</li>
+        <li>Sliding rows, portals, metal, gold and explosive bricks</li>
+        <li>Stars and best scores for every level</li>
+        <li>Music for each world, settings, touch-friendly controls</li>
       </ul>
       <a class="btn" href="v2.html">Play Version 2.0</a>
       <span class="date">Created October 2026</span>
+      <p class="credit">Rebuilt with Claude Code by Anthropic</p>
     </div>
   </div>
   <dialog id="vid">
@@ -83,6 +89,18 @@
     function closeVideo() { vid.close(); }
     vid.addEventListener('close', () => video.pause());
     vid.addEventListener('click', e => { if (e.target === vid) vid.close(); });
+
+    // Draw the original game's look: white board, rainbow rows, red ball, blue bat
+    const colors = ['#FF0000', '#FFA500', '#FFFF00', '#008000', '#0000FF'];
+    let svg = '<rect width="800" height="600" fill="#fff"/>';
+    colors.forEach((c, row) => {
+      for (let col = 0; col < 10; col++) {
+        if (row > 2 && (col === 3 || col === 7)) continue;
+        svg += `<rect x="${27.5 + col * 75}" y="${30 + row * 25}" width="70" height="20" fill="${c}"/>`;
+      }
+    });
+    svg += '<circle cx="470" cy="380" r="10" fill="#FF6B6B"/><rect x="380" y="560" width="100" height="20" fill="#0095DD"/>';
+    document.getElementById('classicShot').innerHTML = svg;
   </script>
   <footer>© 2025-2026 <a href="https://sala.company">sala.company</a> · MIT License</footer>
 </body>

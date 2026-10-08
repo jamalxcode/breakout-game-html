@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Breakout 2.0 Tests</title>
+<style>
+  :root { --bg:#0b0b1e; --fg:#e8ecff; --muted:#8a90b8; --ok:#5ff3a8; --bad:#ff5a7a; --warn:#ffd23f; }
+  body { margin:0; padding:24px 16px; background:var(--bg); color:var(--fg); font:14px/1.5 system-ui,"Segoe UI",sans-serif; }
+  h1 { margin:0 0 4px; font-size:22px; }
+  #summary { font-size:18px; font-weight:700; margin:12px 0 20px; }
+  .ok { color:var(--ok); } .bad { color:var(--bad); } .warn { color:var(--warn); }
+  table { border-collapse:collapse; width:100%; max-width:900px; font-variant-numeric:tabular-nums; }
+  td, th { padding:4px 10px; border-bottom:1px solid #22224a; text-align:left; }
+  th { color:var(--muted); font-weight:600; }
+  ul { padding-left:18px; }
+</style>
+</head>
+<body>
+<h1>Breakout 2.0 tests</h1>
+<div class="ok" style="color:var(--muted)">Checks every level, the power-ups and scoring, then lets a bot play all 76 levels.</div>
+<div id="summary">Running…</div>
+<ul id="checks"></ul>
+<table id="sim"><thead><tr><th>Level</th><th>Name</th><th>Result</th><th>Bot time</th><th>Target</th><th>Lives lost</th><th>Stars</th></tr></thead><tbody></tbody></table>
+<script type="module" src="tests.js"></script>
+</body>
+</html>
